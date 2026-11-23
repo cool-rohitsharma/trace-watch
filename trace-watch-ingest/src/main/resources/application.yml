@@ -1,0 +1,36 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: trace-watch-ingest
+  threads:
+    virtual:
+      enabled: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+        linger.ms: 5
+        batch.size: 32768
+
+tracewatch:
+  kafka:
+    raw-topic: telemetry.raw
+  ingest:
+    rate-limit-per-second: 500
+    idempotency-ttl-seconds: 600
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
