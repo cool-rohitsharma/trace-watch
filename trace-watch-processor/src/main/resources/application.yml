@@ -1,0 +1,48 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: trace-watch-processor
+  threads:
+    virtual:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tracewatch
+    username: tw_user
+    password: tw_password
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: trace-watch-processor-cg
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.rohitsharma.tracewatch.common"
+        spring.json.value.default.type: "com.rohitsharma.tracewatch.common.TelemetryEvent"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+tracewatch:
+  kafka:
+    raw-topic: telemetry.raw
+    incidents-topic: incidents.triggered
+    dlq-topic: telemetry.dlq
+  anomaly:
+    window-seconds: 60
+    error-threshold: 5
+    cooldown-seconds: 120
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
